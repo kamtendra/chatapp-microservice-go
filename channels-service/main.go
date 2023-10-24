@@ -3,11 +3,13 @@
 package main
 
 import (
+    "fmt"
     "log"
     "net/http"
     "github.com/gorilla/mux"
     "database/sql"
     _ "github.com/lib/pq"
+    "mychatapp/router"
 )
 
 func main() {
@@ -19,30 +21,25 @@ func main() {
     defer db.Close()
 
     router := mux.NewRouter()
-    router.HandleFunc("/channels", createChannelHandler(db)).Methods("POST")
-    router.HandleFunc("/channels/{channelID}", closeChannelHandler(db)).Methods("DELETE")
-    router.HandleFunc("/channels/{channelID}/messages", getMessagesHandler(db)).Methods("GET")
+    router.Use(commonMiddleware) // Add common middleware if needed
+    router.PathPrefix("/api").Handler(http.StripPrefix("/api", router.Router))
+    
+    router.HandleFunc("/health", healthCheckHandler).Methods("GET")
 
-    log.Fatal(http.ListenAndServe(":8080", router))
+    // Set up routes defined in router
+    routerSetup := router.SetupRoutes(router, db)
+
+    log.Fatal(http.ListenAndServe(":8080", routerSetup))
 }
 
-// createChannelHandler creates a new channel
-func createChannelHandler(db *sql.DB) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        // Implement channel creation logic here
-    }
+func commonMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        // Implement common middleware logic here
+        next.ServeHTTP(w, r)
+    })
 }
 
-// closeChannelHandler closes an existing channel
-func closeChannelHandler(db *sql.DB) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        // Implement channel closing logic here
-    }
-}
-
-// getMessagesHandler retrieves messages for a channel
-func getMessagesHandler(db *sql.DB) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        // Implement message retrieval logic here
-    }
+func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusOK)
+    fmt.Fprint(w, "OK")
 }
