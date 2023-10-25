@@ -7,9 +7,10 @@ import (
 )
 
 func SetupRoutes(r *mux.Router, db *sql.DB) *mux.Router {
-    r.HandleFunc("/channels", CreateChannelHandler(db)).Methods("POST")
-    r.HandleFunc("/channels/{channelID:[0-9]+}", CloseChannelHandler(db)).Methods("DELETE")
-    r.HandleFunc("/channels", QueryChannelsHandler(db)).Methods("GET")
+    r.HandleFunc("/channels", handler.CreateChannelHandler(db)).Methods("POST")
+    r.HandleFunc("/channels/{channelID:[0-9]+}", handler.CloseChannelHandler(db)).Methods("DELETE")
+    r.HandleFunc("/channels", handler.QueryChannelsHandler(db)).Methods("GET")
 
     return r
 }
+
