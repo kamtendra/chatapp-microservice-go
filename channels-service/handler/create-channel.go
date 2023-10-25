@@ -6,16 +6,12 @@ import (
     "encoding/json"
     "net/http"
     "database/sql"
+    "chat-app-microservice/channels-service/model"
 )
-
-type Channel struct {
-    ID   int    `json:"id"`
-    Name string `json:"name"`
-}
 
 func createChannelHandler(db *sql.DB) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        var channel Channel
+        var channel model.Channel 
         decoder := json.NewDecoder(r.Body)
         if err := decoder.Decode(&channel); err != nil {
             http.Error(w, "Invalid request payload", http.StatusBadRequest)
@@ -33,6 +29,8 @@ func createChannelHandler(db *sql.DB) http.HandlerFunc {
 
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusCreated)
-        json.NewEncoder(w).Encode(channel)
+        if err := json.NewEncoder(w).Encode(channel); err != nil {
+            http.Error(w, "Error encoding JSON response", http.StatusInternalServerError)
+        }
     }
 }

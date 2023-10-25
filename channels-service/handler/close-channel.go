@@ -1,38 +1,29 @@
-// create_channel_handler.go
+// close_channel_handler.go
 
 package main
 
 import (
-    "encoding/json"
     "net/http"
     "database/sql"
+    "github.com/gorilla/mux"
 )
 
-type Channel struct {
-    ID   int    `json:"id"`
-    Name string `json:"name"`
-}
-
-func createChannelHandler(db *sql.DB) http.HandlerFunc {
+func closeChannelHandler(db *sql.DB) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        var channel Channel
-        decoder := json.NewDecoder(r.Body)
-        if err := decoder.Decode(&channel); err != nil {
-            http.Error(w, "Invalid request payload", http.StatusBadRequest)
-            return
-        }
-        defer r.Body.Close()
+        params := mux.Vars(r)
+        channelID := params["channelID"]
 
-        // Insert the new channel into the database
-        insertQuery := "INSERT INTO channels (name) VALUES ($1) RETURNING id, name"
-        err := db.QueryRow(insertQuery, channel.Name).Scan(&channel.ID, &channel.Name)
+        // Implement logic to close the channel with the given ID in the database
+        // Example: DELETE FROM channels WHERE id = $1
+
+        deleteQuery := "DELETE FROM channels WHERE id = $1"
+        _, err := db.Exec(deleteQuery, channelID)
         if err != nil {
-            http.Error(w, "Error creating channel", http.StatusInternalServerError)
+            http.Error(w, "Error closing channel", http.StatusInternalServerError)
             return
         }
 
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusCreated)
-        json.NewEncoder(w).Encode(channel)
+        // Return a response indicating successful channel closure
+        w.WriteHeader(http.StatusNoContent)
     }
 }

@@ -3,9 +3,9 @@
 package repository
 
 import (
-    "database/sql"
-    "log"
-    "fmt"
+	"chat-app-microservice/channels-service/model"
+	"database/sql"
+	"log"
 )
 
 type ChannelRepository struct {
