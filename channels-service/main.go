@@ -5,6 +5,7 @@ package main
 import (
 	"chat-app-microservice/channels-service/router"
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -14,11 +15,20 @@ import (
 
 func main() {
 	// Replace with your database connection string
-	db, err := sql.Open("postgres", "user=username dbname=mychatapp sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
+	const (
+		host     = "localhost"
+		port     = 5432
+		user     = "postgres"
+		password = "12345"
+		dbname   = "mychatapp"
+	)
+	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	db, err := sql.Open("postgres", psqlconn)
+	CheckError(err)
+
 	defer db.Close()
+
+	
 
 	// Create a new router
 	r := mux.NewRouter()
@@ -27,7 +37,13 @@ func main() {
 	router.SetupRoutes(r, db)
 
 	// Start the server
-	port := ":8080"
-	log.Printf("Server is running on port %s\n", port)
-	log.Fatal(http.ListenAndServe(port, r))
+	serverPort := ":8080"
+	log.Printf("Server is running on port %s\n", serverPort)
+	log.Fatal(http.ListenAndServe(serverPort, r))
+}
+
+func CheckError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }

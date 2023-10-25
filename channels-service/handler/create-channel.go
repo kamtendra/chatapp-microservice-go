@@ -22,6 +22,7 @@ func CreateChannelHandler(db *sql.DB) http.HandlerFunc {
 		err := db.QueryRow(insertQuery, false).Scan(&channel.ID, &channel.CreatedAt, &channel.IsClosed)
 		if err != nil {
 			http.Error(w, "Error creating channel", http.StatusInternalServerError)
+			println(err)
 			return
 		}
 
