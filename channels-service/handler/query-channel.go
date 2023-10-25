@@ -1,35 +1,25 @@
-// query_channels_handler.go
-
-package main
+package handler
 
 import (
     "encoding/json"
     "net/http"
     "database/sql"
+    "chat-app-microservice/channels-service/model"
 )
 
-type Channel struct {
-    ID   int    `json:"id"`
-    Name string `json:"name"`
-}
-
-func queryChannelsHandler(db *sql.DB) http.HandlerFunc {
+func QueryChannelsHandler(db *sql.DB) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        // Implement logic to query and retrieve channels from the database
-        // Example: SELECT id, name FROM channels
-
-        // Assuming you have a channels table with columns 'id' and 'name'
-        rows, err := db.Query("SELECT id, name FROM channels")
+        rows, err := db.Query("SELECT id, created_at, is_closed FROM channels")
         if err != nil {
             http.Error(w, "Error querying channels", http.StatusInternalServerError)
             return
         }
         defer rows.Close()
 
-        var channels []Channel
+        var channels []model.Channel
         for rows.Next() {
-            var channel Channel
-            if err := rows.Scan(&channel.ID, &channel.Name); err != nil {
+            var channel model.Channel
+            if err := rows.Scan(&channel.ID, &channel.CreatedAt, &channel.IsClosed); err != nil {
                 http.Error(w, "Error scanning channel", http.StatusInternalServerError)
                 return
             }
